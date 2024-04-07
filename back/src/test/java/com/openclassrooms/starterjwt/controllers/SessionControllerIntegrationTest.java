@@ -26,4 +26,12 @@ public class SessionControllerIntegrationTest {
         mockMvc.perform(get("/api/session/{id}", id))
                .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testFindAll_Integration() throws Exception {
+        // Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session"
+        mockMvc.perform(get("/api/session"))
+            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+    }
 }
