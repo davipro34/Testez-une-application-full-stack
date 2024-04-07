@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import com.openclassrooms.starterjwt.dto.SessionDto;
+import com.openclassrooms.starterjwt.exception.NotFoundException;
 import com.openclassrooms.starterjwt.mapper.SessionMapper;
 import com.openclassrooms.starterjwt.models.Session;
 import com.openclassrooms.starterjwt.services.SessionService;
@@ -69,6 +70,19 @@ public class SessionControllerUnitTest {
                .andExpect(status().isOk()) // Vérifie que le statut de la réponse est OK
                .andExpect(content().contentType(MediaType.APPLICATION_JSON)) // Vérifie que le type de contenu est JSON
                .andExpect(jsonPath("$.id", is(1))); // Vérifie que l'ID de la session dans le corps de la réponse est 1
+    }
+
+    @Test
+    @WithMockUser
+    public void testFindById_Unit_SessionNotFound() throws Exception {
+        Long id = 1L;
+
+        // Configure le mock pour lancer une exception lorsque getById est appelé
+        when(sessionService.getById(id)).thenThrow(new NotFoundException());
+
+        // Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session/{id}"
+        mockMvc.perform(get("/api/session/{id}", id))
+            .andExpect(status().isNotFound()); // Vérifie que le statut de la réponse est 404 NOT FOUND
     }
 
     @Test // Indique que c'est une méthode de test
