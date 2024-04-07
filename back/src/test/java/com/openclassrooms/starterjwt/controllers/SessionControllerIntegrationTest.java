@@ -1,7 +1,12 @@
 package com.openclassrooms.starterjwt.controllers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Date;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openclassrooms.starterjwt.dto.SessionDto;
 
 @SpringBootTest // Indique que c'est un test qui nécessite le contexte Spring
 @AutoConfigureMockMvc // Configure automatiquement un MockMvc
@@ -32,6 +40,27 @@ public class SessionControllerIntegrationTest {
     public void testFindAll_Integration() throws Exception {
         // Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session"
         mockMvc.perform(get("/api/session"))
+            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+    }
+    
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testCreate_Integration() throws Exception {
+        // Crée un objet SessionDto pour le test
+        SessionDto sessionDto = new SessionDto();
+        sessionDto.setName("Test Session"); // Respecte la contrainte @Size(max = 50)
+        sessionDto.setDate(new Date()); // @NotNull
+        sessionDto.setTeacher_id(1L); // @NotNull
+        sessionDto.setDescription("This is a test session."); // Respecte la contrainte @Size(max = 2500)
+    
+        // Convertit l'objet SessionDto en JSON
+        String sessionDtoJson = new ObjectMapper().writeValueAsString(sessionDto);
+    
+        // Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session"
+        // Envoie l'objet SessionDto en JSON dans le corps de la requête
+        mockMvc.perform(post("/api/session")
+                .contentType(APPLICATION_JSON)
+                .content(sessionDtoJson))
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 }
