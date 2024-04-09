@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  mysql-database:
+    image: mysql:5.7
+    container_name: mysql-database
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8088:8080"
+    depends_on:
+      - mysql-database
+
+volumes:
+  mysql-data:
