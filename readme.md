@@ -5,16 +5,18 @@ This application is a working support for tests (unit, integration and end to en
 
 ## Setting up the Database
 
-1. Verify the presence of a MySQL database instance installed and set up correctly on your system.
-2. Run the script for creating the database found in the `resources/sql` directory to set up the required database schema.
-3. Input your database connection details into the `application.properties` configuration file.
+1. Verify the presence of a MySQL database instance installed and set up correctly on your system, or use the docker file :
+    - ressources/docker/docker-compose.yml
+2. Run the script `init_2dbs.sql` for creating the 2 databases found in the `resources/sql` directory to set up the required database schema.
+3. For your databases connections use these configuration files :
+    - ressources/sql/_src_main_resources/application.properties
+    - ressources/sql/_src_test_resources/application-test.properties
+4. Copy the SQL initialisation scripts folders and files in main and test, resources folders.
 
 ### Necessary Environment Variables for MySQL
 
 - `MYSQL_URL`: Your MySQL database's URL. For instance, `jdbc:mysql://localhost:3306/`.
-- `MYSQL_DATABASE`: The title of your MySQL database. For instance, `test`.
-- `MYSQL_USER`: Your MySQL database username.
-- `MYSQL_PASSWORD`: The password for your MySQL database.
+- `MYSQL_ROOT_PASSWORD`: The password for your MySQL database.
 
 ## Installing the Application
 
