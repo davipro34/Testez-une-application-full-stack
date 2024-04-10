@@ -108,7 +108,7 @@ public class SessionControllerUnitTest {
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Exécute le test avec un utilisateur mocké
-    public void testFindById_Unit() throws Exception {
+    public void testFindById_Unit_Success() throws Exception {
         // Arrange
         when(sessionService.getById(1L)).thenReturn(session); // Mocke le comportement de sessionService.getById
         when(sessionMapper.toDto(session)).thenReturn(sessionDto); // Mocke le comportement de sessionMapper.toDto
