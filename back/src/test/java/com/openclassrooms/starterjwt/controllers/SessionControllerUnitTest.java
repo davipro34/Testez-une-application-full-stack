@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -259,5 +260,21 @@ public class SessionControllerUnitTest {
         ResponseEntity<?> response = sessionController.save(id); // Appeler la méthode de suppression sur le contrôleur avec l'ID de la session
         // Assert
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND)); // Vérifier que le statut de la réponse est 404 NOT FOUND
+    }
+
+    // Teste la participation d'un utilisateur à une session
+    @Test
+    public void testParticipate_Unit() {
+        // Arrange
+        String sessionId = "1"; // Définir l'ID de la session
+        String userId = "2"; // Définir l'ID de l'utilisateur
+        doNothing().when(sessionService).participate(Long.valueOf(sessionId), Long.valueOf(userId)); // Simuler le comportement de sessionService pour ne rien faire lorsqu'on appelle la méthode participate
+
+        // Act
+        ResponseEntity<?> response = sessionController.participate(sessionId, userId); // Appeler la méthode de participation sur le contrôleur avec l'ID de la session et l'ID de l'utilisateur
+
+        // Assert
+        verify(sessionService, times(1)).participate(Long.valueOf(sessionId), Long.valueOf(userId)); // Vérifier que la méthode participate du service SessionService a été appelée une fois avec les mêmes ID de session et d'utilisateur
+        assertThat(response.getStatusCode(), is(HttpStatus.OK)); // Vérifier que le statut de la réponse est 200 OK
     }
 }
