@@ -4,7 +4,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -185,9 +187,10 @@ public class SessionControllerUnitTest {
         verify(sessionMapper, times(1)).toDto(any(Session.class));
     }
 
-    // Teste la mise à jour d'une session
+    // Teste la mise à jour d'une session avec succès
     @Test
-    public void testUpdate_Unit() {
+    @WithMockUser
+    public void testUpdate_Unit_Success() throws Exception {
         initializeSession(); // Initialise la session
         initializeDto(); // Initialise le DTO de la session
 
@@ -207,6 +210,30 @@ public class SessionControllerUnitTest {
         verify(sessionService, times(1)).update(anyLong(), any(Session.class));
         verify(sessionMapper, times(1)).toEntity(any(SessionDto.class));
         verify(sessionMapper, times(1)).toDto(any(Session.class));
+    }
+
+    // Teste la mise à jour d'une session qui n'existe pas
+    @Test
+    @WithMockUser
+    public void testUpdate_Unit_SessionNotFound() throws Exception {
+        initializeDto(); // Initialise le DTO de la session
+
+        // Mocke le comportement des méthodes update, toEntity et toDto
+        when(sessionService.update(anyLong(), any(Session.class))).thenThrow(new NotFoundException());
+        when(sessionMapper.toEntity(any(SessionDto.class))).thenReturn(session);
+
+        // Effectue une mise à jour et vérifie la réponse
+        // Capture l'exception NotFoundException lors de l'appel à la méthode update du sessionController avec les arguments "1" et sessionDto
+        Exception exception = assertThrows(NotFoundException.class, () -> {
+            sessionController.update("1", sessionDto);
+        });
+
+        // Vérifie que l'exception est bien de type NotFoundException
+        assertTrue(exception instanceof NotFoundException);
+
+        // Vérifie que les méthodes update et toEntity ont été appelées une fois
+        verify(sessionService, times(1)).update(anyLong(), any(Session.class));
+        verify(sessionMapper, times(1)).toEntity(any(SessionDto.class));
     }
 
     // Teste la suppression d'une session
