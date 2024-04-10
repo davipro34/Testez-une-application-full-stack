@@ -102,4 +102,15 @@ public class SessionControllerIntegrationTest {
         mockMvc.perform(delete("/api/session/{id}", id))
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testParticipate_Integration() throws Exception {
+        Long sessionId = 1L; // L'ID de la session à laquelle participer
+        Long userId = 2L; // L'ID de l'utilisateur qui participe
+
+        // Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session/{id}/participate/{userId}"
+        mockMvc.perform(post("/api/session/{id}/participate/{userId}", sessionId, userId))
+            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+    }
 }
