@@ -2,6 +2,7 @@ package com.openclassrooms.starterjwt.controllers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Date;
@@ -61,6 +62,29 @@ public class SessionControllerIntegrationTest {
         // Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session"
         // Envoie l'objet SessionDto en JSON dans le corps de la requête
         mockMvc.perform(post("/api/session")
+                .contentType(APPLICATION_JSON)
+                .content(sessionDtoJson))
+            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+    }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testUpdate_Integration() throws Exception {
+        // Crée un objet SessionDto pour le test
+        SessionDto sessionDto = new SessionDto();
+        sessionDto.setName("Updated Session"); // Respecte la contrainte @Size(max = 50)
+        sessionDto.setDate(new Date()); // @NotNull
+        sessionDto.setTeacher_id(1L); // @NotNull
+        sessionDto.setDescription("This is an updated test session."); // Respecte la contrainte @Size(max = 2500)
+
+        // Convertit l'objet SessionDto en JSON
+        String sessionDtoJson = new ObjectMapper().writeValueAsString(sessionDto);
+
+        Long id = 1L; // L'ID de la session à mettre à jour
+
+        // Utilise MockMvc pour effectuer une requête PUT sur l'URL "/api/session/{id}"
+        // Envoie l'objet SessionDto en JSON dans le corps de la requête
+        mockMvc.perform(put("/api/session/{id}", id)
                 .contentType(APPLICATION_JSON)
                 .content(sessionDtoJson))
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
