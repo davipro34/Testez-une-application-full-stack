@@ -2,6 +2,7 @@ package com.openclassrooms.starterjwt.controllers;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,38 +47,61 @@ import com.openclassrooms.starterjwt.models.Teacher;
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.services.SessionService;
 
-@SpringBootTest // Indique que c'est une classe de test pour Spring Boot
-@AutoConfigureMockMvc // Configure automatiquement un MockMvc
+
+@SpringBootTest
+@AutoConfigureMockMvc
 public class SessionControllerUnitTest {
 
-    @Autowired // Injecte un MockMvc
+    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired // Injecte le contrôleur à tester
+    @Autowired
     private SessionController sessionController;
 
-    @MockBean // Crée un mock pour le service SessionService
+    @MockBean
     private SessionService sessionService;
 
-    @MockBean // Crée un mock pour le mapper SessionMapper
+    @MockBean
     private SessionMapper sessionMapper;
 
-    private Session session; // Instance de Session pour les tests
-    private SessionDto sessionDto; // Instance de SessionDto pour les tests
-    private ObjectMapper mapper; // ObjectMapper pour convertir les objets en JSON et vice versa
+    private Session session;
+    private SessionDto sessionDto;
+    private ObjectMapper mapper;
 
-    @BeforeEach // Exécuté avant chaque test
+    @BeforeEach
     public void setup() {
-        // Arrange
-        session = new Session(); // Initialise une nouvelle session
-        session.setId(1L); // Définit l'ID de la session
+        session = new Session();
+        session.setId(1L);
 
-        sessionDto = new SessionDto(); // Initialise un nouveau SessionDto
-        sessionDto.setId(1L); // Définit l'ID du SessionDto
+        sessionDto = new SessionDto();
+        sessionDto.setId(1L);
 
-        mapper = new ObjectMapper(); // Initialise un nouvel ObjectMapper
-        mapper.registerModule(new JavaTimeModule()); // Enregistre le module JavaTime pour la sérialisation/désérialisation des dates
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Désactive la conversion des dates en timestamps
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
+
+    // Initialise une session pour les tests
+    private void initializeSession() {
+        session.setName("Test Session"); // Définit le nom de la session
+        session.setDate(new Date()); // Définit la date de la session
+        session.setTeacher(new Teacher(1L, "DELAHAYE", "Margot", null, null)); // Définit l'enseignant de la session
+        session.setDescription("This is a test session."); // Définit la description de la session
+        session.setUsers(Arrays.asList(
+            new User(2L, "john@email", "DOE", "John", "password", false, null, null), // Ajoute un utilisateur à la session
+            new User(3L, "jane@email", "DOE", "Jane", "password", false, null, null) // Ajoute un autre utilisateur à la session
+        ));
+    }
+
+    // Initialise un DTO de session pour les tests
+    private void initializeDto() {
+        sessionDto.setName("Test Session"); // Définit le nom du DTO de la session
+        sessionDto.setDate(new Date()); // Définit la date du DTO de la session
+        sessionDto.setTeacher_id(1L); // Définit l'ID de l'enseignant du DTO de la session
+        sessionDto.setDescription("Test Description"); // Définit la description du DTO de la session
+        sessionDto.setUsers(Arrays.asList(1L, 2L)); // Définit les utilisateurs du DTO de la session
+        sessionDto.setCreatedAt(LocalDateTime.now()); // Définit la date de création du DTO de la session
+        sessionDto.setUpdatedAt(LocalDateTime.now()); // Définit la date de mise à jour du DTO de la session
     }
 
     @Test // Indique que c'est une méthode de test
@@ -136,63 +160,78 @@ public class SessionControllerUnitTest {
         verify(sessionMapper, times(1)).toDto(sessions); // Vérifie que sessionMapper.toDto a été appelé une fois
     }
 
-    @Test // Indique que c'est une méthode de test
-    @WithMockUser // Exécute le test avec un utilisateur mocké
+    // Teste la création d'une session
+    @Test
+    @WithMockUser
     public void testCreate_Unit() throws Exception {
-        // Arrange
-        sessionDto.setName("Test Session"); // Définit le nom de la session
-        sessionDto.setDate(new Date()); // Définit la date de la session
-        sessionDto.setTeacher_id(1L); // Définit l'ID de l'enseignant de la session
-        sessionDto.setDescription("Test Description"); // Définit la description de la session
-        sessionDto.setUsers(Arrays.asList(1L, 2L)); // Définit les utilisateurs de la session
-        sessionDto.setCreatedAt(LocalDateTime.now()); // Définit la date de création de la session
-        sessionDto.setUpdatedAt(LocalDateTime.now()); // Définit la date de mise à jour de la session
+        initializeSession(); // Initialise la session
+        initializeDto(); // Initialise le DTO de la session
 
-        when(sessionMapper.toEntity(sessionDto)).thenReturn(session); // Mocke le comportement de sessionMapper.toEntity
-        when(sessionService.create(session)).thenReturn(session); // Mocke le comportement de sessionService.create
-        when(sessionMapper.toDto(session)).thenReturn(sessionDto); // Mocke le comportement de sessionMapper.toDto
-        // Act & Assert
-        mockMvc.perform(post("/api/session") // Effectue une requête POST sur /api/session
-                .contentType(MediaType.APPLICATION_JSON) // Définit le type de contenu de la requête
-                .content(mapper.writeValueAsString(sessionDto))) // Convertit le SessionDto en JSON et l'ajoute au corps de la requête
-                .andExpect(status().isOk()) // Attend un statut 200 OK
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)) // Attend un contenu de type application/json
-                .andExpect(jsonPath("$.id", is(1))); // Attend que l'ID de la réponse soit 1
+        // Mocke le comportement des méthodes toEntity, create et toDto
+        when(sessionMapper.toEntity(sessionDto)).thenReturn(session);
+        when(sessionService.create(session)).thenReturn(session);
+        when(sessionMapper.toDto(session)).thenReturn(sessionDto);
 
-        verify(sessionService, times(1)).create(any(Session.class)); // Vérifie que sessionService.create a été appelé une fois
-        verify(sessionMapper, times(1)).toDto(any(Session.class)); // Vérifie que sessionMapper.toDto a été appelé une fois
+        // Effectue une requête POST et vérifie la réponse
+        mockMvc.perform(post("/api/session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(sessionDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(1)));
+
+        // Vérifie que les méthodes create et toDto ont été appelées une fois
+        verify(sessionService, times(1)).create(any(Session.class));
+        verify(sessionMapper, times(1)).toDto(any(Session.class));
     }
 
-    @Test // Indique que c'est une méthode de test
+    // Teste la mise à jour d'une session
+    @Test
     public void testUpdate_Unit() {
+        initializeSession(); // Initialise la session
+        initializeDto(); // Initialise le DTO de la session
+
+        // Mocke le comportement des méthodes update, toEntity et toDto
+        when(sessionService.update(anyLong(), any(Session.class))).thenReturn(session);
+        when(sessionMapper.toEntity(any(SessionDto.class))).thenReturn(session);
+        when(sessionMapper.toDto(any(Session.class))).thenReturn(sessionDto);
+
+        // Effectue une mise à jour et vérifie la réponse
+        ResponseEntity<?> response = sessionController.update("1", sessionDto);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode()); // Vérifie le statut de la réponse
+        assertTrue(response.getBody() instanceof SessionDto); // Vérifie le type du corps de la réponse
+        assertEquals(sessionDto, response.getBody()); // Vérifie le contenu du corps de la réponse
+
+        // Vérifie que les méthodes update, toEntity et toDto ont été appelées une fois
+        verify(sessionService, times(1)).update(anyLong(), any(Session.class));
+        verify(sessionMapper, times(1)).toEntity(any(SessionDto.class));
+        verify(sessionMapper, times(1)).toDto(any(Session.class));
+    }
+
+    // Teste la suppression d'une session
+    @Test
+    public void testDelete_Unit_Success() {
         // Arrange
-        sessionDto.setName("Test Session"); // Définit le nom de la session
-        sessionDto.setDate(new Date()); // Définit la date de la session
-        sessionDto.setTeacher_id(1L); // Définit l'ID de l'enseignant de la session
-        sessionDto.setDescription("This is a test session."); // Définit la description de la session
-        sessionDto.setUsers(Arrays.asList(2L, 3L)); // Définit les utilisateurs de la session
-
-        session.setName("Test Session"); // Définit le nom de la session
-        session.setDate(new Date()); // Définit la date de la session
-        session.setTeacher(new Teacher(1L, "DELAHAYE", "Margot", null, null)); // Définit l'enseignant de la session
-        session.setDescription("This is a test session."); // Définit la description de la session
-        session.setUsers(Arrays.asList(
-            new User(2L, "john@email", "DOE", "John", "password", false, null, null), 
-            new User(3L, "jane@email", "DOE", "Jane", "password", false, null, null)
-        )); // Définit les utilisateurs de la session
-
-        when(sessionService.update(anyLong(), any(Session.class))).thenReturn(session); // Mocke le comportement de sessionService.update
-        when(sessionMapper.toEntity(any(SessionDto.class))).thenReturn(session); // Mocke le comportement de sessionMapper.toEntity
-        when(sessionMapper.toDto(any(Session.class))).thenReturn(sessionDto); // Mocke le comportement de sessionMapper.toDto
+        String id = "1"; // Définir l'ID de la session à supprimer
+        Session session = new Session(); // Créer une nouvelle session
+        when(sessionService.getById(Long.valueOf(id))).thenReturn(session); // Simuler le comportement de sessionService pour retourner la session lorsqu'on cherche la session
         // Act
-        ResponseEntity<?> response = sessionController.update("1", sessionDto); // Appelle la méthode update du contrôleur
+        ResponseEntity<?> response = sessionController.save(id); // Appeler la méthode de suppression sur le contrôleur avec l'ID de la session
         // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode()); // Vérifie que le statut de la réponse est 200 OK
-        assertTrue(response.getBody() instanceof SessionDto); // Vérifie que le corps de la réponse est une instance de SessionDto
-        assertEquals(sessionDto, response.getBody()); // Vérifie que le corps de la réponse est égal au SessionDto
+        assertThat(response.getStatusCode(), is(HttpStatus.OK)); // Vérifier que le statut de la réponse est 200 OK
+        verify(sessionService, times(1)).delete(Long.valueOf(id)); // Vérifier que la méthode delete de sessionService a été appelée une fois avec l'ID de la session
+    }
 
-        verify(sessionService, times(1)).update(anyLong(), any(Session.class)); // Vérifie que sessionService.update a été appelé une fois
-        verify(sessionMapper, times(1)).toEntity(any(SessionDto.class)); // Vérifie que sessionMapper.toEntity a été appelé une fois
-        verify(sessionMapper, times(1)).toDto(any(Session.class)); // Vérifie que sessionMapper.toDto a été appelé une fois
+    // Teste la suppression d'une session si non trouvée
+    @Test
+    public void testDelete_Unit_SessionNotFound() {
+        // Arrange
+        String id = "1"; // Définir l'ID de la session à supprimer
+        when(sessionService.getById(Long.valueOf(id))).thenReturn(null); // Simuler le comportement de sessionService pour retourner null lorsqu'on cherche la session
+        // Act
+        ResponseEntity<?> response = sessionController.save(id); // Appeler la méthode de suppression sur le contrôleur avec l'ID de la session
+        // Assert
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND)); // Vérifier que le statut de la réponse est 404 NOT FOUND
     }
 }
