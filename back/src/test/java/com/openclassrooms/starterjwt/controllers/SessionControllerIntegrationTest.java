@@ -1,5 +1,6 @@
 package com.openclassrooms.starterjwt.controllers;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +25,7 @@ import com.openclassrooms.starterjwt.dto.SessionDto;
 @SpringBootTest // Indique que c'est un test qui nécessite le contexte Spring
 @AutoConfigureMockMvc // Configure automatiquement un MockMvc
 @TestPropertySource(locations = "classpath:application-test.properties") // Spécifie le fichier de propriétés à utiliser
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class SessionControllerIntegrationTest {
 
     @Autowired // Injecte un MockMvc depuis le contexte Spring
@@ -87,6 +90,16 @@ public class SessionControllerIntegrationTest {
         mockMvc.perform(put("/api/session/{id}", id)
                 .contentType(APPLICATION_JSON)
                 .content(sessionDtoJson))
+            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+    }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testDelete_Integration() throws Exception {
+        Long id = 1L; // L'ID de la session à supprimer
+
+        // Utilise MockMvc pour effectuer une requête DELETE sur l'URL "/api/session/{id}"
+        mockMvc.perform(delete("/api/session/{id}", id))
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 }
