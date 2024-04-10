@@ -277,4 +277,19 @@ public class SessionControllerUnitTest {
         verify(sessionService, times(1)).participate(Long.valueOf(sessionId), Long.valueOf(userId)); // Vérifier que la méthode participate du service SessionService a été appelée une fois avec les mêmes ID de session et d'utilisateur
         assertThat(response.getStatusCode(), is(HttpStatus.OK)); // Vérifier que le statut de la réponse est 200 OK
     }
+    // Teste le renoncement de participation d'un utilisateur à une session
+    @Test
+    public void testNoLongerParticipate() {
+        // Arrange
+        String sessionId = "1"; // Définir l'ID de la session
+        String userId = "2"; // Définir l'ID de l'utilisateur
+        doNothing().when(sessionService).noLongerParticipate(Long.valueOf(sessionId), Long.valueOf(userId)); // Simuler le comportement de sessionService pour ne rien faire lorsqu'on appelle la méthode noLongerParticipate
+    
+        // Act
+        ResponseEntity<?> response = sessionController.noLongerParticipate(sessionId, userId); // Appeler la méthode noLongerParticipate sur le contrôleur avec l'ID de la session et l'ID de l'utilisateur
+    
+        // Assert
+        verify(sessionService, times(1)).noLongerParticipate(Long.valueOf(sessionId), Long.valueOf(userId)); // Vérifier que la méthode noLongerParticipate du service SessionService a été appelée une fois avec les mêmes ID de session et d'utilisateur
+        assertThat(response.getStatusCode(), is(HttpStatus.OK)); // Vérifier que le statut de la réponse est 200 OK
+    }
 }
