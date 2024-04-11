@@ -4,10 +4,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Date;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import org.junit.jupiter.api.Test;
@@ -33,12 +36,29 @@ public class SessionControllerIntegrationTest {
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testFindById_Integration() throws Exception {
+    public void testFindById_Success() throws Exception {
+        // Given : L'ID de la session à rechercher
         Long id = 1L;
-
-        // Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session/{id}"
+        // When : Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session/{id}"
         mockMvc.perform(get("/api/session/{id}", id))
-               .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+        // Then : Vérifie que le statut de la réponse est OK
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id", is(id.intValue()))) // Vérifie que l'ID de la session dans la réponse est correct
+        .andExpect(jsonPath("$.name", is(notNullValue()))) // Vérifie que le nom de la session dans la réponse n'est pas null
+        .andExpect(jsonPath("$.date", is(notNullValue()))) // Vérifie que la date de la session dans la réponse n'est pas null
+        .andExpect(jsonPath("$.teacher_id", is(notNullValue()))) // Vérifie que l'ID de l'enseignant de la session dans la réponse n'est pas null
+        .andExpect(jsonPath("$.description", is(notNullValue()))); // Vérifie que la description de la session dans la réponse n'est pas null
+    }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser // Simule un utilisateur authentifié
+    public void testFindById_SessionNotFound() throws Exception {
+        // Given : Un ID qui n'existe pas dans la base de données
+        Long id = 9999L;
+        // When : Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session/{id}"
+        mockMvc.perform(get("/api/session/{id}", id))
+        // Then : Vérifie que le statut de la réponse est 404 (Not Found)
+        .andExpect(status().isNotFound());
     }
 
     @Test // Indique que c'est une méthode de test
