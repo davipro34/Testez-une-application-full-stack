@@ -8,6 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,42 +37,60 @@ public class TeacherControllerUnitTest {
 
     @MockBean
     private TeacherMapper teacherMapper;
-
-    private Teacher teacher;
     private TeacherDto teacherDto;
 
     @BeforeEach
     public void setup() {
-        // Initialise un enseignant pour les tests
-        teacher = new Teacher();
-        teacher.setId(1L);
-        teacher.setFirstName("John");
-        teacher.setLastName("Doe");
-
         // Initialise un DTO d'enseignant pour les tests
         teacherDto = new TeacherDto();
         teacherDto.setId(1L);
-        teacherDto.setFirstName("John");
-        teacherDto.setLastName("Doe");
+        teacherDto.setFirstName("Margot");
+        teacherDto.setLastName("DELAHAYE");
+    
+        // Initialise un enseignant pour les tests
+        Teacher teacher = new Teacher();
+        teacher.setId(1L);
+        teacher.setFirstName("Margot");
+        teacher.setLastName("DELAHAYE");
+    
+        // Initialise une liste de DTO d'enseignants pour les tests
+        List<TeacherDto> teacherDtos = Arrays.asList(teacherDto);
+    
+        // Initialise une liste d'enseignants pour les tests
+        List<Teacher> teachers = Arrays.asList(teacher);
+    
+        // Configure les mocks pour retourner ces objets lorsque les méthodes correspondantes sont appelées
+        when(teacherService.findById(1L)).thenReturn(teacher);
+        when(teacherService.findAll()).thenReturn(teachers);
+        when(teacherMapper.toDto(teacher)).thenReturn(teacherDto);
+        when(teacherMapper.toDto(teachers)).thenReturn(teacherDtos);
     }
-
+    
     @Test
     @WithMockUser // Exécute le test avec un utilisateur mocké
     public void testFindById() throws Exception {
-        // Configure les mocks pour retourner ces objets lorsque les méthodes correspondantes sont appelées
-        when(teacherService.findById(1L)).thenReturn(teacher);
-        when(teacherMapper.toDto(teacher)).thenReturn(teacherDto);
-
         // Act : Effectue une requête GET sur l'URL "/api/teacher/1"
         mockMvc.perform(get("/api/teacher/1"))
-
         // Assert : Vérifie que le statut de la réponse est OK et que le corps de la réponse contient le DTO d'enseignant correct
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(1)))
-        .andExpect(jsonPath("$.firstName", is("John")))
-        .andExpect(jsonPath("$.lastName", is("Doe")));
-        // Vérifie que les méthodes du service et du mapper ont été appelées avec les bons arguments
+        .andExpect(jsonPath("$.firstName", is("Margot")))
+        .andExpect(jsonPath("$.lastName", is("DELAHAYE")));
+        // Vérifie que la méthode du service a été appelée avec les bons arguments
         verify(teacherService, times(1)).findById(1L);
-        verify(teacherMapper, times(1)).toDto(teacher);
+    }
+    
+    @Test
+    @WithMockUser // Exécute le test avec un utilisateur mocké
+    public void testGetAllTeachers() throws Exception {
+        // Act : Effectue une requête GET sur l'URL "/api/teacher"
+        mockMvc.perform(get("/api/teacher"))
+        // Assert : Vérifie que le statut de la réponse est OK et que le corps de la réponse contient une liste avec le premier DTO d'enseignant correct
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id", is(1)))
+        .andExpect(jsonPath("$[0].firstName", is("Margot")))
+        .andExpect(jsonPath("$[0].lastName", is("DELAHAYE")));
+        // Vérifie que la méthode du service a été appelée avec les bons arguments
+        verify(teacherService, times(1)).findAll();
     }
 }
