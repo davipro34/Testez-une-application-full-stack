@@ -1,6 +1,7 @@
 package com.openclassrooms.starterjwt.controllers;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +46,28 @@ public class UserControllerIntegrationTest {
         // Given : Aucun utilisateur avec l'ID 999 n'existe dans la base de données de test
         // When
         mockMvc.perform(get("/api/user/{id}", 999L) // Effectue une requête GET à l'URL /api/user/{id} avec l'ID 999
+                .contentType(MediaType.APPLICATION_JSON)) // Définit le type de contenu de la requête à JSON
+        // Then
+                .andExpect(status().isNotFound()); // Vérifie que le statut de la réponse est 404 (Not Found)
+    }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser(username = "john@email.com") // Simule un utilisateur authentifié avec l'email "john@email.com"
+    public void testDelete_Success() throws Exception {
+        // Given : Un utilisateur avec l'ID 2 et l'email "john@email.com" existe dans la base de données de test
+        // When
+        mockMvc.perform(delete("/api/user/{id}", 2L) // Effectue une requête DELETE à l'URL /api/user/{id} avec l'ID 2
+                .contentType(MediaType.APPLICATION_JSON)) // Définit le type de contenu de la requête à JSON
+        // Then
+                .andExpect(status().isOk()); // Vérifie que le statut de la réponse est 200 (OK)
+    }
+
+    @Test // Indique que c'est une méthode de test
+    @WithMockUser(username = "john@email.com") // Simule un utilisateur authentifié avec l'email "john@email.com"
+    public void testDelete_UserNotFound() throws Exception {
+        // Given : Aucun utilisateur avec l'ID 999 n'existe dans la base de données de test
+        // When
+        mockMvc.perform(delete("/api/user/{id}", 999L) // Effectue une requête DELETE à l'URL /api/user/{id} avec l'ID 999
                 .contentType(MediaType.APPLICATION_JSON)) // Définit le type de contenu de la requête à JSON
         // Then
                 .andExpect(status().isNotFound()); // Vérifie que le statut de la réponse est 404 (Not Found)
