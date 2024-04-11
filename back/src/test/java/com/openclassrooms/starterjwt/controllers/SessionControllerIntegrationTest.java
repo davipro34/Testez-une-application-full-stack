@@ -6,13 +6,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Date;
-
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
+import java.util.Date;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.starterjwt.dto.SessionDto;
+
 
 @SpringBootTest // Indique que c'est un test qui nécessite le contexte Spring
 @AutoConfigureMockMvc // Configure automatiquement un MockMvc
@@ -60,13 +61,15 @@ public class SessionControllerIntegrationTest {
         // Then : Vérifie que le statut de la réponse est 404 (Not Found)
         .andExpect(status().isNotFound());
     }
-
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
     public void testFindAll_Integration() throws Exception {
-        // Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session"
+        // When : Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session"
         mockMvc.perform(get("/api/session"))
-            .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
+        // Then : Vérifie que le statut de la réponse est OK
+        .andExpect(status().isOk())
+        // Vérifie que la liste de sessions n'est pas vide
+        .andExpect(jsonPath("$", not(empty())));
     }
     
     @Test // Indique que c'est une méthode de test
