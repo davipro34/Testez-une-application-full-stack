@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.starterjwt.payload.request.LoginRequest;
+import com.openclassrooms.starterjwt.payload.request.SignupRequest;
 
 @SpringBootTest // Indique que c'est un test qui nécessite le contexte Spring
 @AutoConfigureMockMvc // Configure automatiquement un MockMvc
@@ -63,5 +64,42 @@ public class AuthControllerIntegrationTest {
                 .content(jsonLoginRequest)) // Définit le contenu de la requête à la requête de connexion en JSON
         // Then
                 .andExpect(status().isUnauthorized()); // Vérifie que le statut de la réponse est 401 (Unauthorized)
+    }
+
+    @Test // Indique que c'est une méthode de test
+    public void testRegister_Success() throws Exception {
+        // Given : Aucun utilisateur avec l'email "newuser@email.com" n'existe dans la base de données de test
+        // Crée une requête d'inscription avec un email, un prénom, un nom et un mot de passe
+        SignupRequest signupRequest = new SignupRequest();
+        signupRequest.setEmail("newuser@email.com");
+        signupRequest.setFirstName("New");
+        signupRequest.setLastName("User");
+        signupRequest.setPassword("password");
+        // Convertit la requête d'inscription en JSON
+        String jsonSignupRequest = new ObjectMapper().writeValueAsString(signupRequest);
+        // When
+        mockMvc.perform(post("/api/auth/register") // Effectue une requête POST à l'URL /api/auth/register
+                .contentType(MediaType.APPLICATION_JSON) // Définit le type de contenu de la requête à JSON
+                .content(jsonSignupRequest)) // Définit le contenu de la requête à la requête d'inscription en JSON
+        // Then
+                .andExpect(status().isOk()) // Vérifie que le statut de la réponse est 200 (OK)
+                .andExpect(jsonPath("$.message", is("User registered successfully!"))); // Vérifie que le message dans la réponse est "User registered successfully!"
+    }
+
+    @Test // Indique que c'est une méthode de test
+    public void testRegister_BadRequest() throws Exception {
+        // Given : Une requête d'inscription avec des informations invalides
+        // Crée une requête d'inscription sans prénom, sans nom, avec un email invalide et un mot de passe trop court
+        SignupRequest signupRequest = new SignupRequest();
+        signupRequest.setEmail("invalid");
+        signupRequest.setPassword("123");
+        // Convertit la requête d'inscription en JSON
+        String jsonSignupRequest = new ObjectMapper().writeValueAsString(signupRequest);
+        // When
+        mockMvc.perform(post("/api/auth/register") // Effectue une requête POST à l'URL /api/auth/register
+                .contentType(MediaType.APPLICATION_JSON) // Définit le type de contenu de la requête à JSON
+                .content(jsonSignupRequest)) // Définit le contenu de la requête à la requête d'inscription en JSON
+        // Then
+                .andExpect(status().isBadRequest()); // Vérifie que le statut de la réponse est 400 (Bad Request)
     }
 }
