@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 @SpringBootTest // Indique que c'est un test qui nécessite le contexte Spring
@@ -47,5 +48,20 @@ public class TeacherControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)) // Définit le type de contenu de la requête à JSON
         // Then
                 .andExpect(status().isNotFound()); // Vérifie que le statut de la réponse est 404 (Not Found)
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetAllTeachers() throws Exception {
+        // Given : Les données nécessaires sont déjà dans la base de données de test
+        // When
+        mockMvc.perform(get("/api/teacher") // Effectue une requête GET à l'URL /api/teacher
+                .contentType(MediaType.APPLICATION_JSON))
+        // Then
+                .andExpect(status().isOk()) // Vérifie que le statut de la réponse est 200 (OK)
+                .andExpect(jsonPath("$", hasSize(2))) // Vérifie que la réponse contient une liste de 2 enseignants
+                .andExpect(jsonPath("$[0].id", is(1))) // Vérifie que l'ID du premier enseignant dans la réponse est 1
+                .andExpect(jsonPath("$[0].firstName", is("Margot"))) // Vérifie que le prénom du premier enseignant dans la réponse est "Margot"
+                .andExpect(jsonPath("$[0].lastName", is("DELAHAYE"))); // Vérifie que le nom du premier enseignant dans la réponse est "DELAHAYE"
     }
 }
