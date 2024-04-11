@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,6 +70,7 @@ public class UserControllerUnitTest {
     @Test
     @WithMockUser // Exécute le test avec un utilisateur mocké
     public void testFindById() throws Exception {
+        // Arrange
         // Act : Effectue une requête GET sur l'URL "/api/user/1"
         mockMvc.perform(get("/api/user/1"))
         // Assert : Vérifie que le statut de la réponse est OK et que le corps de la réponse contient le DTO d'utilisateur correct
@@ -78,5 +80,23 @@ public class UserControllerUnitTest {
         .andExpect(jsonPath("$.lastName", is("Admin")));
         // Vérifie que la méthode du service a été appelée avec les bons arguments
         verify(userService, times(1)).findById(1L);
+    }
+
+    @Test
+    @WithMockUser(username = "test@test.com") // Exécute le test avec un utilisateur mocké
+    public void testDeleteById() throws Exception {
+        // Arrange
+        // Initialise un utilisateur pour les tests
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@test.com");
+        // Configure le mock pour retourner cet utilisateur lorsque la méthode findById est appelée
+        when(userService.findById(1L)).thenReturn(user);
+        // Act : Effectue une requête DELETE sur l'URL "/api/user/1"
+        mockMvc.perform(delete("/api/user/1"))
+        // Assert : Vérifie que le statut de la réponse est OK
+        .andExpect(status().isOk());
+        // Vérifie que la méthode du service a été appelée avec le bon argument
+        verify(userService, times(1)).delete(1L);
     }
 }
