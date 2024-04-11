@@ -74,8 +74,8 @@ public class SessionControllerIntegrationTest {
     
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testCreate_Integration() throws Exception {
-        // Crée un objet SessionDto pour le test
+    public void testCreate() throws Exception {
+        // Given : Crée un objet SessionDto pour le test
         SessionDto sessionDto = new SessionDto();
         sessionDto.setName("Test Session"); // Respecte la contrainte @Size(max = 50)
         sessionDto.setDate(new Date()); // @NotNull
@@ -85,18 +85,19 @@ public class SessionControllerIntegrationTest {
         // Convertit l'objet SessionDto en JSON
         String sessionDtoJson = new ObjectMapper().writeValueAsString(sessionDto);
     
-        // Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session"
+        // When : Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session"
         // Envoie l'objet SessionDto en JSON dans le corps de la requête
         mockMvc.perform(post("/api/session")
                 .contentType(APPLICATION_JSON)
                 .content(sessionDtoJson))
+        // Then : Vérifie que le statut de la réponse est OK
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testUpdate_Integration() throws Exception {
-        // Crée un objet SessionDto pour le test
+    public void testUpdate() throws Exception {
+        // Given : Crée un objet SessionDto pour le test
         SessionDto sessionDto = new SessionDto();
         sessionDto.setName("Updated Session"); // Respecte la contrainte @Size(max = 50)
         sessionDto.setDate(new Date()); // @NotNull
@@ -105,46 +106,51 @@ public class SessionControllerIntegrationTest {
 
         // Convertit l'objet SessionDto en JSON
         String sessionDtoJson = new ObjectMapper().writeValueAsString(sessionDto);
-
         Long id = 1L; // L'ID de la session à mettre à jour
 
-        // Utilise MockMvc pour effectuer une requête PUT sur l'URL "/api/session/{id}"
+        // When : Utilise MockMvc pour effectuer une requête PUT sur l'URL "/api/session/{id}"
         // Envoie l'objet SessionDto en JSON dans le corps de la requête
         mockMvc.perform(put("/api/session/{id}", id)
                 .contentType(APPLICATION_JSON)
                 .content(sessionDtoJson))
+        // Then : Vérifie que le statut de la réponse est OK
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testDelete_Integration() throws Exception {
-        Long id = 1L; // L'ID de la session à supprimer
-
-        // Utilise MockMvc pour effectuer une requête DELETE sur l'URL "/api/session/{id}"
+    public void testDelete() throws Exception {
+        // Given : L'ID de la session à supprimer
+        Long id = 1L;
+        // When : Utilise MockMvc pour effectuer une requête DELETE sur l'URL "/api/session/{id}"
         mockMvc.perform(delete("/api/session/{id}", id))
+        // Then : Vérifie que le statut de la réponse est OK
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testParticipate_Integration() throws Exception {
-        Long sessionId = 1L; // L'ID de la session à laquelle participer
-        Long userId = 2L; // L'ID de l'utilisateur qui participe
+    public void testParticipate() throws Exception {
+        // Given : L'ID de la session et l'ID de l'utilisateur qui participe
+        Long sessionId = 1L;
+        Long userId = 2L;
 
-        // Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session/{id}/participate/{userId}"
+        // When : Utilise MockMvc pour effectuer une requête POST sur l'URL "/api/session/{id}/participate/{userId}"
         mockMvc.perform(post("/api/session/{id}/participate/{userId}", sessionId, userId))
+        // Then : Vérifie que le statut de la réponse est OK
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 
     @Test // Indique que c'est une méthode de test
     @WithMockUser // Simule un utilisateur authentifié
-    public void testNoLongerParticipate_Integration() throws Exception {
-        Long sessionId = 2L; // L'ID de la session à laquelle l'utilisateur ne participe plus
-        Long userId = 3L; // L'ID de l'utilisateur qui ne participe plus
+    public void testNoLongerParticipate() throws Exception {
+        // Given : L'ID de la session et l'ID de l'utilisateur qui ne participe plus
+        Long sessionId = 2L;
+        Long userId = 3L;
 
-        // Utilise MockMvc pour effectuer une requête DELETE sur l'URL "/api/session/{id}/participate/{userId}"
+        // When : Utilise MockMvc pour effectuer une requête DELETE sur l'URL "/api/session/{id}/participate/{userId}"
         mockMvc.perform(delete("/api/session/{id}/participate/{userId}", sessionId, userId))
+        // Then : Vérifie que le statut de la réponse est OK
             .andExpect(status().isOk()); // Vérifie que le statut de la réponse est OK
     }
 }
