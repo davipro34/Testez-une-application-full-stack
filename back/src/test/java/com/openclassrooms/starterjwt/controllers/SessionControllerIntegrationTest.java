@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import java.util.Date;
@@ -40,15 +39,18 @@ public class SessionControllerIntegrationTest {
     public void testFindById_Success() throws Exception {
         // Given : L'ID de la session à rechercher
         Long id = 1L;
+        String expectedName = "Séance de Yoga matin";
+        Long expectedTeacherId = 1L;
+        String expectedDescription = "Une séance de yoga revitalisante pour bien commencer la journée.";
+    
         // When : Utilise MockMvc pour effectuer une requête GET sur l'URL "/api/session/{id}"
         mockMvc.perform(get("/api/session/{id}", id))
         // Then : Vérifie que le statut de la réponse est OK
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(id.intValue()))) // Vérifie que l'ID de la session dans la réponse est correct
-        .andExpect(jsonPath("$.name", is(notNullValue()))) // Vérifie que le nom de la session dans la réponse n'est pas null
-        .andExpect(jsonPath("$.date", is(notNullValue()))) // Vérifie que la date de la session dans la réponse n'est pas null
-        .andExpect(jsonPath("$.teacher_id", is(notNullValue()))) // Vérifie que l'ID de l'enseignant de la session dans la réponse n'est pas null
-        .andExpect(jsonPath("$.description", is(notNullValue()))); // Vérifie que la description de la session dans la réponse n'est pas null
+        .andExpect(jsonPath("$.name", is(expectedName))) // Vérifie que le nom de la session dans la réponse est correct
+        .andExpect(jsonPath("$.teacher_id", is(expectedTeacherId.intValue()))) // Vérifie que l'ID de l'enseignant de la session dans la réponse est correct
+        .andExpect(jsonPath("$.description", is(expectedDescription))); // Vérifie que la description de la session dans la réponse est correcte
     }
 
     @Test // Indique que c'est une méthode de test
