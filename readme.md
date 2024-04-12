@@ -53,13 +53,12 @@ This application is a working support for tests (unit, integration and end to en
 Make certain that the required versions of Java, Node.js, Maven, and Angular CLI (version 14.1.0) are installed for full compatibility with the project.
 
 ## Technologies Utilized in the Development of the Yoga App :
-- NodeJS v16+
-- Angular CLI v14+
-- Java 11+
+- NodeJS v16
+- Angular CLI v14
+- Java 11
 - SpringBoot 2.6.1
 - jjwt 0.9.1
 - MySQL v8.0
-- H2 Database
 - Maven 3.8.6
 - Jest 29.7.0
 - Cypress
