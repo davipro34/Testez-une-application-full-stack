@@ -83,6 +83,18 @@ public class UserControllerUnitTest {
     }
 
     @Test
+    @WithMockUser // Exécute le test avec un utilisateur mocké
+    public void testFindById_NumberFormatException() throws Exception {
+        // Arrange : Aucun arrangement nécessaire pour ce test
+
+        // Act : Effectue une requête GET sur l'URL "/api/user/notANumber"
+        mockMvc.perform(get("/api/user/notANumber"))
+
+        // Assert : Vérifie que le statut de la réponse est 400 (Bad Request)
+        .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @WithMockUser(username = "test@test.com") // Exécute le test avec un utilisateur mocké
     public void testDeleteById() throws Exception {
         // Arrange
@@ -98,5 +110,35 @@ public class UserControllerUnitTest {
         .andExpect(status().isOk());
         // Vérifie que la méthode du service a été appelée avec le bon argument
         verify(userService, times(1)).delete(1L);
+    }
+
+    @Test
+    @WithMockUser(username = "wrong@test.com") // Exécute le test avec un utilisateur mocké dont le nom d'utilisateur est "wrong@test.com"
+    public void testDeleteById_Unauthorized() throws Exception {
+        // Arrange
+        // Initialise un utilisateur pour les tests
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@test.com");
+        // Configure le mock pour retourner cet utilisateur lorsque la méthode findById est appelée
+        when(userService.findById(1L)).thenReturn(user);
+
+        // Act : Effectue une requête DELETE sur l'URL "/api/user/1"
+        mockMvc.perform(delete("/api/user/1"))
+
+        // Assert : Vérifie que le statut de la réponse est 401 (Unauthorized)
+        .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser // Exécute le test avec un utilisateur mocké
+    public void testDeleteById_NumberFormatException() throws Exception {
+        // Arrange : Aucun arrangement nécessaire pour ce test
+
+        // Act : Effectue une requête DELETE sur l'URL "/api/user/notANumber"
+        mockMvc.perform(delete("/api/user/notANumber"))
+
+        // Assert : Vérifie que le statut de la réponse est 400 (Bad Request)
+        .andExpect(status().isBadRequest());
     }
 }
