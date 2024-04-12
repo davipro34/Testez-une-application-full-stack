@@ -1,4 +1,4 @@
-### Compiled by David on February 13, 2024,
+### Compiled by David on April 5, 2024,
 ### For VS Code, Eclipse, Java, Maven, NodeJs, Angular, and some others.
 
 ### Compiled output ###
@@ -94,6 +94,7 @@ buildNumber.properties
 **/.vscode/
 **/.history
 **/.history/*
+*.code-workspace
 
 ### Miscellaneous ###
 **/.angular/cache
