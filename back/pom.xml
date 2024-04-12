@@ -127,6 +127,9 @@
 						<configuration>
 							<excludes>
 								<exclude>com/openclassrooms/starterjwt/dto/**/*.class</exclude>
+								<exclude>com/openclassrooms/starterjwt/models/**/*.class</exclude>
+								<exclude>com/openclassrooms/starterjwt/payload/request/**/*.class</exclude>
+								<exclude>com/openclassrooms/starterjwt/payload/response/**/*.class</exclude>
 							</excludes>
 						</configuration>
 					</execution>
