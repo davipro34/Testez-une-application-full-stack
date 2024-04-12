@@ -1,6 +1,7 @@
 package com.openclassrooms.starterjwt.controllers;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,6 +79,17 @@ public class TeacherControllerUnitTest {
         .andExpect(jsonPath("$.lastName", is("DELAHAYE")));
         // Vérifie que la méthode du service a été appelée avec les bons arguments
         verify(teacherService, times(1)).findById(1L);
+    }
+
+    @Test
+    @WithMockUser // Exécute le test avec un utilisateur mocké
+    public void testFindById_BadRequest() throws Exception {
+        // Act : Effectue une requête GET sur l'URL "/api/teacher/abc" où "abc" n'est pas un nombre
+        mockMvc.perform(get("/api/teacher/abc"))
+        // Assert : Vérifie que le statut de la réponse est BadRequest
+        .andExpect(status().isBadRequest());
+        // Vérifie que la méthode du service n'a pas été appelée
+        verify(teacherService, times(0)).findById(anyLong());
     }
     
     @Test
