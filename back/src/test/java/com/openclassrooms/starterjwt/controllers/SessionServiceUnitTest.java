@@ -2,9 +2,11 @@ package com.openclassrooms.starterjwt.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,8 +57,10 @@ public class SessionServiceUnitTest {
         // Arrange : création d'une session avec un utilisateur participant
         User user = new User();
         user.setId(1L);
-        Session session = new Session();
-        session.setUsers(Arrays.asList(user));
+        Session session = mock(Session.class);
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        when(session.getUsers()).thenReturn(users);
         when(sessionRepository.findById(anyLong())).thenReturn(Optional.of(session));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
@@ -74,6 +78,24 @@ public class SessionServiceUnitTest {
 
         // Act & Assert : vérification que la méthode lève une exception NotFoundException
         assertThrows(NotFoundException.class, () -> {
+            sessionService.noLongerParticipate(1L, 1L);
+        });
+    }
+
+    // Test de la méthode noLongerParticipate quand l'utilisateur ne participe pas déjà
+    @Test
+    public void noLongerParticipate_WhenUserNotAlreadyParticipates_ThrowsBadRequestException() {
+        // Arrange : création d'une session sans utilisateur participant
+        User user = new User();
+        user.setId(1L);
+        Session session = mock(Session.class);
+        List<User> users = new ArrayList<>();
+        when(session.getUsers()).thenReturn(users);
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.of(session));
+
+        // Act & Assert : vérification que la méthode lève une exception BadRequestException
+        // quand l'utilisateur ne participe pas déjà à la session
+        assertThrows(BadRequestException.class, () -> {
             sessionService.noLongerParticipate(1L, 1L);
         });
     }
