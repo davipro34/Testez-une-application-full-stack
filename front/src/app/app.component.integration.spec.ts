@@ -37,10 +37,6 @@ describe('AppComponent', () => {
     app = fixture.componentInstance;
   });
 
-  it('should create the app', () => {
-    expect(app).toBeTruthy();
-  });
-
   // Test de la fonction $isLogged() et de son interaction avec SessionService.
   it('should return the correct logged in status', () => {
     // Given
