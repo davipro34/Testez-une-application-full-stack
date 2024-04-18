@@ -89,4 +89,20 @@ describe('SessionApiService', () => {
   
     req.flush(updatedSession); // Envoi de la réponse mockée à la requête
   });
+
+  it('should participate in a session', () => {
+    // Given : L'ID de la session et l'ID de l'utilisateur
+    const sessionId = '1';
+    const userId = '1';
+  
+    // When : Appel de la méthode à tester avec l'ID de la session et l'ID de l'utilisateur
+    service.participate(sessionId, userId).subscribe();
+  
+    // Then : Vérification qu'une seule requête a été envoyée à l'URL correcte
+    const req = httpMock.expectOne(`api/session/${sessionId}/participate/${userId}`);
+  
+    expect(req.request.method).toBe('POST'); // Vérification que la méthode de la requête est POST
+  
+    req.flush(null); // Envoi de la réponse mockée à la requête
+  });
 });
