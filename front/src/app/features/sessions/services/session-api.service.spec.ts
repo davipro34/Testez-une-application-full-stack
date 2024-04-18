@@ -105,4 +105,20 @@ describe('SessionApiService', () => {
   
     req.flush(null); // Envoi de la réponse mockée à la requête
   });
+
+  it('should unparticipate from a session', () => {
+    // Given : L'ID de la session et l'ID de l'utilisateur
+    const sessionId = '1';
+    const userId = '1';
+  
+    // When : Appel de la méthode à tester avec l'ID de la session et l'ID de l'utilisateur
+    service.unParticipate(sessionId, userId).subscribe();
+  
+    // Then : Vérification qu'une seule requête a été envoyée à l'URL correcte
+    const req = httpMock.expectOne(`api/session/${sessionId}/participate/${userId}`);
+  
+    expect(req.request.method).toBe('DELETE'); // Vérification que la méthode de la requête est DELETE
+  
+    req.flush(null); // Envoi de la réponse mockée à la requête
+  });
 });
