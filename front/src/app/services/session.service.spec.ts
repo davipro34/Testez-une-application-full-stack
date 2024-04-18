@@ -59,4 +59,32 @@ describe('SessionService', () => {
       expect(observerSpy.getLastValue()).toBe(true); // Vérification que l'Observable a émis la valeur true
     });
   });
+
+  // Test de la méthode logOut
+  describe('logOut', () => {
+    // Test pour vérifier que la méthode logOut met à jour isLogged et sessionInformation correctement
+    it('should update isLogged to false and sessionInformation to undefined when logOut is called', () => {
+      // Given
+      const user: SessionInformation = {
+        token: 'testToken',
+        type: 'testType',
+        id: 1,
+        username: 'testUsername',
+        firstName: 'testFirstName',
+        lastName: 'testLastName',
+        admin: false
+      };
+      service.logIn(user); // Nous devons d'abord connecter l'utilisateur pour pouvoir le déconnecter
+      const observerSpy = new ObserverSpy<boolean>(); // Création d'un espion d'observateur pour espionner l'Observable retourné par la méthode $isLogged
+      service.$isLogged().subscribe(observerSpy); // Abonnement à l'Observable retourné par la méthode $isLogged et espionnage de cet Observable
+
+      // When
+      service.logOut(); // Appel de la méthode logOut
+
+      // Then
+      expect(service.isLogged).toBe(false); // Vérification que isLogged est passé à false
+      expect(service.sessionInformation).toBeUndefined(); // Vérification que sessionInformation est devenu undefined
+      expect(observerSpy.getLastValue()).toBe(false); // Vérification que l'Observable a émis la valeur false
+    });
+  });
 });
