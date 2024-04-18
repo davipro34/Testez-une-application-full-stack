@@ -64,4 +64,29 @@ describe('SessionApiService', () => {
 
     req.flush(session); // Envoi de la réponse mockée à la requête
   });
+
+  it('should update a session', () => {
+    // Given : L'ID de la session à mettre à jour et la session mise à jour
+    const id = '1';
+    const updatedSession: Session = {
+      id: 1,
+      name: 'Updated Test Session',
+      description: 'This is an updated test session',
+      date: new Date(),
+      teacher_id: 1,
+      users: [1, 2, 3]
+    };
+  
+    // When : Appel de la méthode à tester avec l'ID de la session et la session mise à jour
+    service.update(id, updatedSession).subscribe();
+  
+    // Then : Vérification qu'une seule requête a été envoyée à l'URL correcte
+    const req = httpMock.expectOne(`api/session/${id}`);
+  
+    expect(req.request.method).toBe('PUT'); // Vérification que la méthode de la requête est PUT
+  
+    expect(req.request.body).toEqual(updatedSession); // Vérification que le corps de la requête est la session mise à jour
+  
+    req.flush(updatedSession); // Envoi de la réponse mockée à la requête
+  });
 });
