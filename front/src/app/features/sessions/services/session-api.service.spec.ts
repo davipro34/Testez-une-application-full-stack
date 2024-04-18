@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { expect } from '@jest/globals';
 
 import { SessionApiService } from './session-api.service';
+import { Session } from '../interfaces/session.interface';
 
 describe('SessionApiService', () => {
   let service: SessionApiService;
@@ -27,18 +28,40 @@ describe('SessionApiService', () => {
   });
 
   it('should delete the session', () => {
-    // Given
-    const id = '1'; // L'ID de la session à supprimer
+    // Given : L'ID de la session à supprimer
+    const id = '1';
 
     // When : Appel de la méthode à tester avec l'ID de la session
     service.delete(id).subscribe();
 
     // Then : Vérification qu'une seule requête a été envoyée à l'URL correcte
     const req = httpMock.expectOne(`api/session/${id}`);
-    // Vérification que la méthode de la requête est DELETE
-    expect(req.request.method).toBe('DELETE');
 
-    // Envoi de la réponse mockée à la requête
-    req.flush(null);
+    expect(req.request.method).toBe('DELETE'); // Vérification que la méthode de la requête est DELETE
+
+    req.flush(null); // Envoi de la réponse mockée à la requête
+  });
+
+  it('should create a session', () => {
+    // Given : La session à créer
+    const session: Session = {
+      name: 'Test Session',
+      description: 'This is a test session',
+      date: new Date(),
+      teacher_id: 1,
+      users: [1, 2, 3]
+    };
+
+    // When : Appel de la méthode à tester avec la session
+    service.create(session).subscribe();
+
+    // Then : Vérification qu'une seule requête a été envoyée à l'URL correcte
+    const req = httpMock.expectOne('api/session');
+
+    expect(req.request.method).toBe('POST'); // Vérification que la méthode de la requête est POST
+
+    expect(req.request.body).toEqual(session); // Vérification que le corps de la requête est la session
+
+    req.flush(session); // Envoi de la réponse mockée à la requête
   });
 });
