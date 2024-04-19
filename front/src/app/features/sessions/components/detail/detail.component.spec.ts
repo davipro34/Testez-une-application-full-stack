@@ -107,5 +107,21 @@ describe('DetailComponent', () => {
     expect(participateSpy).toHaveBeenCalledWith(component.sessionId, component.userId);
     expect((component as any).fetchSession).toHaveBeenCalled();
   });
+
+  it('should unparticipate when unParticipate method is called', () => {
+    // Given : On crée des espions sur les méthodes unParticipate et fetchSession
+    const sessionApiService = TestBed.inject(SessionApiService);
+    const unParticipateSpy = jest.spyOn(sessionApiService, 'unParticipate').mockReturnValue(of(undefined));
+    
+    // On déclare fetchSession comme une méthode publique pour pouvoir créer un espion dessus
+    (component as any).fetchSession = jest.fn();
+  
+    // When : On appelle la méthode unParticipate du composant
+    component.unParticipate();
+  
+    // Then : On vérifie que les méthodes unParticipate et fetchSession ont été appelées
+    expect(unParticipateSpy).toHaveBeenCalledWith(component.sessionId, component.userId);
+    expect((component as any).fetchSession).toHaveBeenCalled();
+  });
 });
 
