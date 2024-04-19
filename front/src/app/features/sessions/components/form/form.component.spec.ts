@@ -1,5 +1,7 @@
+// Importation des modules nécessaires pour les tests
 import { HttpClientModule } from '@angular/common/http';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, tick } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,37 +11,48 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, Router } from '@angular/router';
 import { expect } from '@jest/globals';
 import { SessionService } from 'src/app/services/session.service';
 import { SessionApiService } from '../../services/session-api.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { NgZone } from '@angular/core';
-import { FormComponent } from './form.component';
-import { Session } from '../../interfaces/session.interface';
-import { of } from 'rxjs/internal/observable/of';
 
-// Début de la suite de tests pour FormComponent
+import { FormComponent } from './form.component';
+import { Session } from 'src/app/features/sessions/interfaces/session.interface';
+
+// Début de la suite de tests pour le composant FormComponent
 describe('FormComponent', () => {
-  // Déclaration des variables nécessaires pour les tests
   let component: FormComponent;
   let fixture: ComponentFixture<FormComponent>;
   let router: Router;
+  let route : ActivatedRoute;
   let ngZone: NgZone;
-  let sessionApiService: SessionApiService;
-  let route: ActivatedRoute;
+  let httpTestingController: HttpTestingController;
 
-  // Création d'un mock pour le service SessionService
+  // Mocks pour les services et les données utilisés dans les tests
   const mockSessionService = {
     sessionInformation: {
       admin: true
     }
   } 
+  const mockSession: Session = {
+    id: 1,
+    name: 'my session',
+    description: '....',
+    date: new Date(),
+    teacher_id: 25,
+    users: [1, 5, 9],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-  // Configuration de l'environnement de test avant chaque test
+  // Configuration initiale avant chaque test
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule,
+        RouterTestingModule.withRoutes([
+          { path: 'sessions', component: FormComponent}
+        ]),
         HttpClientModule,
         MatCardModule,
         MatIconModule,
@@ -48,99 +61,117 @@ describe('FormComponent', () => {
         ReactiveFormsModule, 
         MatSnackBarModule,
         MatSelectModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        HttpClientTestingModule
       ],
       providers: [
-        { provide: SessionService, useValue: mockSessionService }, // Utilisation du mock pour le service SessionService
+        { provide: SessionService, useValue: mockSessionService },
         SessionApiService
       ],
-      declarations: [FormComponent] // Déclaration du composant à tester
+      declarations: [FormComponent]
     })
       .compileComponents();
 
-    // Configuration du mock pour simuler un utilisateur non-admin
-    mockSessionService.sessionInformation = { admin: false };
-
-    // Injection du service Router
-    router = TestBed.inject(Router);
-    
-    // Création du composant à tester
+    // Création du composant et du fixture pour les tests
     fixture = TestBed.createComponent(FormComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
-    ngZone = TestBed.inject(NgZone); // Injection de NgZone pour pouvoir l'utiliser dans les tests
-    sessionApiService = TestBed.inject(SessionApiService);
+    router = TestBed.inject(Router);
     route = TestBed.inject(ActivatedRoute);
+    ngZone = TestBed.inject(NgZone);
+    httpTestingController = TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
   });
 
   // Test pour vérifier que le composant est bien créé
   it('should create', () => {
-    // Then
     expect(component).toBeTruthy();
   });
 
-  // Test pour vérifier que le composant navigue vers '/sessions' si l'utilisateur n'est pas un admin
-  it('should navigate to /sessions if user is not admin', () => { 
-    // Given
-    // Création d'un espion pour la méthode navigate
-    const navigateSpy = jest.spyOn(router, 'navigate');
-
-    // When
-    // Utilisation de ngZone.run pour s'assurer que toutes les opérations asynchrones sont terminées avant de résoudre la promesse
-    return ngZone.run(() => new Promise<void>((resolve) => {
-      // Appel de la méthode à tester
+  // Suite de tests pour la méthode ngOnInit
+  describe('ngOnInit', () => {
+    // Test pour vérifier que la méthode initForm est appelée quand l'admin n'est pas en session et que l'URL ne contient pas 'update'
+    it('call without session admin and update in url', () => {
+      // Given
+      const myPrivateFuncInitForm = jest.spyOn(component as any, 'initForm');
+      
+      // When
       component.ngOnInit();
-    
+      
       // Then
-      // Vérification que la méthode navigate a été appelée avec le bon argument
-      expect(navigateSpy).toHaveBeenCalledWith(['/sessions']);
-    
-      resolve();
-    }));
+      expect(myPrivateFuncInitForm).toHaveBeenCalled();
+    })
+
+    // Test pour vérifier que la méthode initForm est appelée quand l'admin n'est pas en session et que l'URL contient 'update'
+    it('call without session admin with update in url', () => {
+      // Given
+      component.onUpdate = false;
+      jest.spyOn(router, 'url', 'get').mockReturnValue('update');
+      jest.spyOn(route.snapshot.paramMap, 'get').mockReturnValue('1');
+      const myPrivateFuncExitPage = jest.spyOn(component as any, 'initForm');
+      const id = '1'
+      
+      // When
+      component.ngOnInit();
+      
+      // Then
+      expect(component.onUpdate).toBe(true);
+      const req = httpTestingController.expectOne(`api/session/${id}`);
+      expect(req.request.method).toEqual('GET');
+      req.flush(mockSession);
+      expect(myPrivateFuncExitPage).toBeCalledWith(mockSession);
+    })
+  
+    // Test pour vérifier que l'utilisateur est redirigé vers '/sessions' quand l'admin est en session
+    it('call with session admin and redirect to session', () => {
+      // Given
+      mockSessionService.sessionInformation.admin = false;
+      const navigateSpy = jest.spyOn(router,'navigate');
+      
+      // When
+      ngZone.run(() => {
+        component.ngOnInit();
+        
+        // Then
+        expect(navigateSpy).toHaveBeenCalledWith(['/sessions']);
+      })
+    })
   });
 
-  // Test pour vérifier que le formulaire est initialisé avec des valeurs par défaut en mode création
-  it('should initialize form with default values when in create mode', () => {
-    // Given
-    // Configuration du mock pour simuler un utilisateur admin et une URL de création
-    mockSessionService.sessionInformation = { admin: true };
-    jest.spyOn(router, 'url', 'get').mockReturnValue('/create');
-  
-    // When
-    // Appel de la méthode à tester
-    component.ngOnInit();
-  
-    // Then
-    // Vérification que le formulaire est initialisé avec des valeurs par défaut
-    expect(component.sessionForm?.value).toEqual({
-      name: '',
-      date: '',
-      teacher_id: '',
-      description: '',
+  // Suite de tests pour la méthode submit
+  describe('submit', () => {
+    // Test pour vérifier que la méthode submit appelle la bonne API quand onUpdate est true
+    it('should call submit with onUpdate true', async () => {
+      // Given
+      const myPrivateFuncExitPage = jest.spyOn(component as any, 'exitPage');
+      myPrivateFuncExitPage.mockImplementation(() => {});
+      
+      // When
+      expect(component.submit()).toBe(void 0)
+      
+      // Then
+      const req = httpTestingController.expectOne('api/session');
+      expect(req.request.method).toEqual('POST');
+      req.flush(mockSession);
+      expect(myPrivateFuncExitPage).toBeCalledWith("Session created !");
     });
-  });
-  
-  // Test pour vérifier que le formulaire est initialisé avec les valeurs de la session en mode mise à jour
-  it('should initialize form with session values when in update mode', () => {
-    // Given
-    // Configuration du mock pour simuler un utilisateur admin, une URL de mise à jour et une session existante
-    const session: Session = { name: 'test', description: 'test', date: new Date(), teacher_id: 1, users: [] };
-    mockSessionService.sessionInformation = { admin: true };
-    jest.spyOn(router, 'url', 'get').mockReturnValue('/update');
-    route.snapshot.paramMap.get = jest.fn().mockReturnValue('1');
-    jest.spyOn(sessionApiService, 'detail').mockReturnValue(of(session));
-  
-    // When
-    // Appel de la méthode à tester
-    component.ngOnInit();
-  
-    // Then
-    // Vérification que le formulaire est initialisé avec les valeurs de la session
-    expect(component.sessionForm?.value).toEqual({
-      name: session.name,
-      date: session.date.toISOString().split('T')[0],
-      teacher_id: session.teacher_id, // Removed .toString()
-      description: session.description,
+    
+    // Test pour vérifier que la méthode submit appelle la bonne API quand onUpdate est false
+    it('should call submit with onUpdate false', () => {
+      // Given
+      const myPrivateFuncExitPage = jest.spyOn(component as any, 'exitPage');
+      myPrivateFuncExitPage.mockImplementation(() => {});
+      component.onUpdate = true;
+      const id = '1'
+      Object.defineProperty(component, 'id', { value: '1'})
+
+      // When
+      expect(component.submit()).toBe(void 0)
+      
+      // Then
+      const req = httpTestingController.expectOne(`api/session/${id}`);
+      expect(req.request.method).toEqual('PUT');
+      req.flush(true);
+      expect(myPrivateFuncExitPage).toBeCalledWith("Session updated !");
     });
   });
 });
