@@ -42,4 +42,21 @@ describe('MeComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // Given
+  it('should navigate back when back method is called', () => {
+    // Crée un espion sur la méthode window.history.back
+    const spy = jest.spyOn(window.history, 'back');
+
+    // When
+    // Appelle la méthode back
+    component.back();
+
+    // Then
+    // Vérifie que la méthode window.history.back a été appelée
+    expect(spy).toHaveBeenCalled();
+
+    // Nettoie l'espion
+    spy.mockRestore();
+  });
 });
