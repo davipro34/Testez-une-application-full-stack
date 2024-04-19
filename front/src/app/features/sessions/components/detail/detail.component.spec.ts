@@ -1,13 +1,16 @@
 import { HttpClientModule } from '@angular/common/http';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterTestingModule, } from '@angular/router/testing';
 import { expect } from '@jest/globals'; 
 import { Location } from '@angular/common';
 
 import { SessionService } from '../../../../services/session.service';
 import { DetailComponent } from './detail.component';
+import { of } from 'rxjs/internal/observable/of';
+import { SessionApiService } from '../../services/session-api.service';
+import { Router } from '@angular/router';
 
 
 describe('DetailComponent', () => {
@@ -68,6 +71,25 @@ describe('DetailComponent', () => {
   
     // Then : On vérifie que la méthode back de l'objet history a été appelée
     expect(spy).toHaveBeenCalled();
+  });
+
+  it('should delete session when delete method is called', () => {
+    // Given : On crée des espions sur les méthodes delete, open et navigate
+    const sessionApiService = TestBed.inject(SessionApiService);
+    const matSnackBar = TestBed.inject(MatSnackBar);
+    const router = TestBed.inject(Router);
+  
+    const deleteSpy = jest.spyOn(sessionApiService, 'delete').mockReturnValue(of(null));
+    const snackBarSpy = jest.spyOn(matSnackBar, 'open').mockReturnValue(undefined as any);
+    const routerSpy = jest.spyOn(router, 'navigate').mockReturnValue(Promise.resolve(true));
+  
+    // When : On appelle la méthode delete du composant
+    component.delete();
+  
+    // Then : On vérifie que les méthodes delete, open et navigate ont été appelées
+    expect(deleteSpy).toHaveBeenCalledWith(component.sessionId);
+    expect(snackBarSpy).toHaveBeenCalledWith('Session deleted !', 'Close', { duration: 3000 });
+    expect(routerSpy).toHaveBeenCalledWith(['sessions']);
   });
 });
 
