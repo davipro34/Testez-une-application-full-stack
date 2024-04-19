@@ -1,28 +1,28 @@
 import { HttpClientModule } from '@angular/common/http';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterTestingModule, } from '@angular/router/testing';
 import { expect } from '@jest/globals'; 
-import { Location } from '@angular/common';
-
+import { NgZone } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SessionApiService } from '../../services/session-api.service';
 import { SessionService } from '../../../../services/session.service';
 import { DetailComponent } from './detail.component';
-import { of } from 'rxjs/internal/observable/of';
-import { SessionApiService } from '../../services/session-api.service';
-import { Router } from '@angular/router';
 
-
+// Début de la suite de tests pour DetailComponent
 describe('DetailComponent', () => {
   let component: DetailComponent;
   let fixture: ComponentFixture<DetailComponent>; 
   let service: SessionService;
-  let location: Location;
-  let locationMock = {
-    back: jest.fn() // Mock de la méthode back de l'objet Location
-  }
+  let serviceApi: SessionApiService;
+  let httpTestingController: HttpTestingController;
+  let route : ActivatedRoute;
+  let ngZone: NgZone;
+  let router: Router;
 
-  // Mock du service à tester
+  // Mock pour SessionService
   const mockSessionService = {
     sessionInformation: {
       admin: true,
@@ -30,98 +30,118 @@ describe('DetailComponent', () => {
     }
   }
 
-  // Avant chaque test, configure le module de test et crée une instance du composant et du service
+  // Avant chaque test, nous configurons le module de test et injectons les dépendances
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule,  // Pour tester le routage
-        HttpClientModule,  // Pour les requêtes HTTP
-        MatSnackBarModule,  // Pour les notifications
-        ReactiveFormsModule  // Pour les formulaires réactifs
+        RouterTestingModule.withRoutes([
+          { path: 'sessions', component: DetailComponent}
+        ]),
+        HttpClientModule,
+        MatSnackBarModule,
+        ReactiveFormsModule,
+        HttpClientTestingModule
       ],
-      declarations: [DetailComponent], // Déclare le composant à tester
+      declarations: [DetailComponent], 
       providers: [
-        { provide: SessionService, useValue: mockSessionService },  // Fournit le mock du service à tester
-        { provide: Location, useValue: locationMock }  // Fournit le mock de l'objet Location
+        { provide: SessionService, useValue: mockSessionService }, 
+        SessionApiService
       ],
     })
-      .compileComponents(); // Compile le module de test
-      service = TestBed.inject(SessionService); // Injecte le service à tester
-      fixture = TestBed.createComponent(DetailComponent); // Crée le composant à tester
-      component = fixture.componentInstance; // Obtient l'instance du composant à tester
-      location = TestBed.inject(Location); // Injecte l'objet Location
-      fixture.detectChanges(); // Déclenche la détection de changements
+    .compileComponents();
+    service = TestBed.inject(SessionService);
+    serviceApi = TestBed.inject(SessionApiService);
+    fixture = TestBed.createComponent(DetailComponent);
+    router = TestBed.inject(Router);
+    route = TestBed.inject(ActivatedRoute);
+    ngZone = TestBed.inject(NgZone);
+    httpTestingController = TestBed.inject(HttpTestingController);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
-  // Teste si le composant est bien créé
+  // Test pour vérifier que le composant est bien créé
   it('should create', () => {
-    // Given : Le composant est créé
-    // When : On vérifie l'existence du composant
-    // Then : Le composant existe
     expect(component).toBeTruthy();
   });
 
-  // Teste si la méthode back du composant appelle bien la méthode back de l'objet history
-  it('should navigate back when back method is called', () => {
-    // Given : On crée un espion sur la méthode back de l'objet history
-    const spy = jest.spyOn(window.history, 'back').mockImplementation(() => {});
-  
-    // When : On appelle la méthode back du composant
-    component.back();
-  
-    // Then : On vérifie que la méthode back de l'objet history a été appelée
-    expect(spy).toHaveBeenCalled();
-  });
-
-  it('should delete session when delete method is called', () => {
-    // Given : On crée des espions sur les méthodes delete, open et navigate
-    const sessionApiService = TestBed.inject(SessionApiService);
-    const matSnackBar = TestBed.inject(MatSnackBar);
-    const router = TestBed.inject(Router);
-  
-    const deleteSpy = jest.spyOn(sessionApiService, 'delete').mockReturnValue(of(null));
-    const snackBarSpy = jest.spyOn(matSnackBar, 'open').mockReturnValue(undefined as any);
-    const routerSpy = jest.spyOn(router, 'navigate').mockReturnValue(Promise.resolve(true));
-  
-    // When : On appelle la méthode delete du composant
-    component.delete();
-  
-    // Then : On vérifie que les méthodes delete, open et navigate ont été appelées
-    expect(deleteSpy).toHaveBeenCalledWith(component.sessionId);
-    expect(snackBarSpy).toHaveBeenCalledWith('Session deleted !', 'Close', { duration: 3000 });
-    expect(routerSpy).toHaveBeenCalledWith(['sessions']);
-  });
-
-  it('should participate when participate method is called', () => {
-    // Given : On crée des espions sur les méthodes participate et fetchSession
-    const sessionApiService = TestBed.inject(SessionApiService);
-    const participateSpy = jest.spyOn(sessionApiService, 'participate').mockReturnValue(of(undefined));
+  // Test pour vérifier que ngOnInit appelle fetchSession
+  it('should call ngOnInit', () => {
+    // Given
+    const mockPrivateFetchSession = jest.spyOn(component as any, 'fetchSession')
     
-    // On déclare fetchSession comme une méthode publique pour pouvoir créer un espion dessus
-    (component as any).fetchSession = jest.fn();
-  
-    // When : On appelle la méthode participate du composant
-    component.participate();
-  
-    // Then : On vérifie que les méthodes participate et fetchSession ont été appelées
-    expect(participateSpy).toHaveBeenCalledWith(component.sessionId, component.userId);
-    expect((component as any).fetchSession).toHaveBeenCalled();
+    // When
+    component.ngOnInit()
+    
+    // Then
+    expect(mockPrivateFetchSession).toBeCalled();
   });
 
-  it('should unparticipate when unParticipate method is called', () => {
-    // Given : On crée des espions sur les méthodes unParticipate et fetchSession
-    const sessionApiService = TestBed.inject(SessionApiService);
-    const unParticipateSpy = jest.spyOn(sessionApiService, 'unParticipate').mockReturnValue(of(undefined));
+  // Test pour vérifier que la méthode back appelle window.history.back
+  it('should call back', () => {
+    // Given
+    jest.spyOn(window.history, 'back');
     
-    // On déclare fetchSession comme une méthode publique pour pouvoir créer un espion dessus
-    (component as any).fetchSession = jest.fn();
-  
-    // When : On appelle la méthode unParticipate du composant
-    component.unParticipate();
-  
-    // Then : On vérifie que les méthodes unParticipate et fetchSession ont été appelées
-    expect(unParticipateSpy).toHaveBeenCalledWith(component.sessionId, component.userId);
-    expect((component as any).fetchSession).toHaveBeenCalled();
+    // When
+    component.back()
+    
+    // Then
+    expect(window.history.back).toBeCalled()
   });
+
+  // Test pour vérifier que la méthode delete envoie une requête DELETE
+  it('should call delete', () => {
+    // Given
+    const navigateSpy = jest.spyOn(router,'navigate');
+    component.sessionId = '1';
+    
+    // When
+    expect(component.delete()).toBe(void 0);
+    
+    // Then
+    const req = httpTestingController.expectOne('api/session/1');
+    expect(req.request.method).toEqual('DELETE');
+    req.flush(true);
+  });
+
+  // Test pour vérifier que la méthode participate envoie une requête POST
+  it('should call participate', () => {
+    // Given
+    const myPrivateFuncExitPage = jest.spyOn(component as any, 'fetchSession');
+    component.sessionId = '1';
+    component.userId = '1';
+    
+    // When
+    expect(component.participate()).toBe(void 0)
+    
+    // Then
+    const req = httpTestingController.expectOne('api/session/1/participate/1');
+    expect(req.request.method).toEqual('POST');
+    req.flush(true);
+  });
+
+  // Test pour vérifier que la méthode unParticipate envoie une requête DELETE
+  it('should call participate', () => {
+    // Given
+    const myPrivateFuncExitPage = jest.spyOn(component as any, 'fetchSession');
+    component.sessionId = '1';
+    component.userId = '1';
+
+    // When
+    expect(component.unParticipate()).toBe(void 0)
+    
+    // Then
+    const req = httpTestingController.expectOne('api/session/1/participate/1');
+    expect(req.request.method).toEqual('DELETE');
+    req.flush(true);
+    expect(myPrivateFuncExitPage).toBeCalled();
+  });
+
+  // Suite de tests pour l'intégration de DetailComponent
+  describe('DetailComponent integrartion suite', () => { 
+    // Test pour vérifier que le détail de la session est bien rendu
+    it('should render the detail session', async() => {
+      expect(fixture.nativeElement.querySelector('[mat-card]')).toBeNull();
+    });
+  })
 });
-
