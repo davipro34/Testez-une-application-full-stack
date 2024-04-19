@@ -91,5 +91,21 @@ describe('DetailComponent', () => {
     expect(snackBarSpy).toHaveBeenCalledWith('Session deleted !', 'Close', { duration: 3000 });
     expect(routerSpy).toHaveBeenCalledWith(['sessions']);
   });
+
+  it('should participate when participate method is called', () => {
+    // Given : On crée des espions sur les méthodes participate et fetchSession
+    const sessionApiService = TestBed.inject(SessionApiService);
+    const participateSpy = jest.spyOn(sessionApiService, 'participate').mockReturnValue(of(undefined));
+    
+    // On déclare fetchSession comme une méthode publique pour pouvoir créer un espion dessus
+    (component as any).fetchSession = jest.fn();
+  
+    // When : On appelle la méthode participate du composant
+    component.participate();
+  
+    // Then : On vérifie que les méthodes participate et fetchSession ont été appelées
+    expect(participateSpy).toHaveBeenCalledWith(component.sessionId, component.userId);
+    expect((component as any).fetchSession).toHaveBeenCalled();
+  });
 });
 
