@@ -42,6 +42,35 @@ describe('Login spec', () => {
     cy.get('.error').should('not.exist')
   })
 
+  it('should logout successfully', () => {
+    // When
+    // Interception de la requête de connexion et simulation d'une réponse réussie
+    cy.intercept('POST', '/api/auth/login', {
+      statusCode: 201,
+      body: user,
+    });
+
+    // Interception de la requête de session et simulation d'une réponse réussie
+    cy.intercept('GET', '/api/session', {
+      statusCode: 200,
+      body: [],
+    }).as('session');
+
+    // Remplissage du formulaire de connexion et soumission
+    cy.get('input[formControlName=email]').type(user.email)
+    cy.get('input[formControlName=password]').type(`${user.password}{enter}{enter}`)
+
+    // Click sur 'Logout' pour se deconnecter
+    cy.get('.link').contains('Logout').click()
+
+    // Then
+    // Vérification que l'URL a changé pour le retour à la page d'accueil
+    cy.url().should('eq', Cypress.config().baseUrl)
+
+    // Vérification qu'aucun message d'erreur n'est affiché
+    cy.get('.error').should('not.exist')
+  })
+
   it('should not login with incorrect email', () => {
     // When
     // Remplissage du formulaire de connexion avec un email incorrect et soumission
