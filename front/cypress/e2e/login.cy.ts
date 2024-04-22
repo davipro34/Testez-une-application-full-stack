@@ -1,29 +1,44 @@
-/// <reference types="cypress" />
+/// <reference types="Cypress" />
 
 describe('Login spec', () => {
-  it('Login successfull', () => {
-    cy.visit('/login')
+  // Given
+  // Définition de l'utilisateur pour les tests
+  const user = {
+    id: 1,
+    firstName: 'Admin',
+    lastName: 'Admin',
+    email: 'yoga@studio.com',
+    password: 'test!1234',
+  };
 
+  // Avant chaque test, visite de la page de connexion
+  beforeEach(() => {
+    cy.visit('/login');
+  });
+
+  it('should login successfully', () => {
+    // When
+    // Interception de la requête de connexion et simulation d'une réponse réussie
     cy.intercept('POST', '/api/auth/login', {
-      body: {
-        id: 1,
-        username: 'userName',
-        firstName: 'firstName',
-        lastName: 'lastName',
-        admin: true
-      },
-    })
+      statusCode: 201,
+      body: user,
+    });
 
-    cy.intercept(
-      {
-        method: 'GET',
-        url: '/api/session',
-      },
-      []).as('session')
+    // Interception de la requête de session et simulation d'une réponse réussie
+    cy.intercept('GET', '/api/session', {
+      statusCode: 200,
+      body: [],
+    }).as('session');
 
-    cy.get('input[formControlName=email]').type("yoga@studio.com")
-    cy.get('input[formControlName=password]').type(`${"test!1234"}{enter}{enter}`)
+    // Remplissage du formulaire de connexion et soumission
+    cy.get('input[formControlName=email]').type(user.email)
+    cy.get('input[formControlName=password]').type(`${user.password}{enter}{enter}`)
 
-    cy.url().should('include', '/sessions')
+    // Then
+    // Vérification que l'URL a changé pour la page de sessions
+    cy.url().should('eq', `${Cypress.config().baseUrl}sessions`);
+
+    // Vérification qu'aucun message d'erreur n'est affiché
+    cy.get('.error').should('not.exist')
   })
 });
