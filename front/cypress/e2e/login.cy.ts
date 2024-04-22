@@ -63,4 +63,15 @@ describe('Login spec', () => {
     // Vérification qu'un message d'erreur est affiché
     cy.get('.error').should('contain', 'An error occurred')
   })
+
+  it('should not login with missing password', () => {
+    // When
+    // Remplissage du formulaire de connexion sans mot de passe et soumission
+    cy.get('input[formControlName=email]').type(user.email)
+    cy.get('input[formControlName=password]').type(`{enter}{enter}`)
+
+    // Then
+    // Vérification qu'un message d'erreur est affiché
+    cy.get('.error').should('contain', 'An error occurred')
+  })
 });
