@@ -52,4 +52,15 @@ describe('Login spec', () => {
     // Vérification qu'un message d'erreur est affiché
     cy.get('.error').should('contain', 'An error occurred')
   })
+
+  it('should not login with incorrect password', () => {
+    // When
+    // Remplissage du formulaire de connexion avec un mot de passe incorrect et soumission
+    cy.get('input[formControlName=email]').type(user.email)
+    cy.get('input[formControlName=password]').type(`badpassword{enter}{enter}`)
+
+    // Then
+    // Vérification qu'un message d'erreur est affiché
+    cy.get('.error').should('contain', 'An error occurred')
+  })
 });
