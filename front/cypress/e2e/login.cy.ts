@@ -41,4 +41,15 @@ describe('Login spec', () => {
     // Vérification qu'aucun message d'erreur n'est affiché
     cy.get('.error').should('not.exist')
   })
+
+  it('should not login with incorrect email', () => {
+    // When
+    // Remplissage du formulaire de connexion avec un email incorrect et soumission
+    cy.get('input[formControlName=email]').type("noexistinguserg@studio.com")
+    cy.get('input[formControlName=password]').type(`${user.password}{enter}{enter}`)
+
+    // Then
+    // Vérification qu'un message d'erreur est affiché
+    cy.get('.error').should('contain', 'An error occurred')
+  })
 });
