@@ -33,19 +33,19 @@ This application is a working support for tests (unit, integration and end to en
 ## Executing Tests
 
 ### Front-end Unit and Integration Testing (Jest)
-
+You can read this : https://github.com/davipro34/Testez-une-application-full-stack/blob/main/front/README.md
 1. In the front-end project folder, execute `npm run test` to conduct front-end unit tests via Jest.
 2. For the coverage report, utilize `npm run test:coverage`.
-3. A `index.html` report will be created in the `front/coverage/jest/lcov-report/index.html` path.
+3. A `index.html` report will be created in the `front/coverage/jest/index.html` path.
 
 ### End-to-End Testing (Cypress)
-
+You can read this : https://github.com/davipro34/Testez-une-application-full-stack/blob/main/front/README.md
 1. In the front-end project area, execute `npm run e2e` for conducting end-to-end testing using Cypress.
 2. For the coverage overview, utilize `npm run e2e:coverage`.
 3. The `index.html` report will be found in the `front/coverage/lcov-report/index.html` folder.
 
 ### Back-end Unit and Integration Testing (JUnit and Mockito)
-
+You can read this : https://github.com/davipro34/Testez-une-application-full-stack/blob/main/back/README.md
 1. Make sure to execute the database creation script found in the `resources/sql` directory before running tests.
 2. In the back-end project area, run `mvn clean test` to perform back-end unit and integration tests via JUnit and Mockito.
 3. A coverage report will be accessible in the `back/target/site/jacoco/index.html` folder.
