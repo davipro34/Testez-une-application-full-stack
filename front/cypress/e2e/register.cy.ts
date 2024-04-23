@@ -32,6 +32,20 @@ describe('Register spec', () => {
     cy.get('button[type=submit]').should('be.disabled')
   });
 
+  it('should display an error if the required password field is to short', () => {
+    // When
+    // Remplissage du formulaire d'inscription sans le mot de passe et soumission
+    cy.get('input[formControlName=firstName]').type(user.firstName)
+    cy.get('input[formControlName=lastName]').type(user.lastName)
+    cy.get('input[formControlName="email"]').type(user.email)
+    cy.get('input[formControlName=password]').type("12")
+    cy.get('button[type=submit]').click()
+
+    // Then
+    // Vérification que le message "An error occurred" s'affiche
+    cy.get('span.error.ml2.ng-star-inserted').should('contain.text', 'An error occurred');
+  });
+
 
   it('should register, log in, verify user account details and delete it', () => {
     // Given
