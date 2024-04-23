@@ -45,8 +45,7 @@ describe('Register spec', () => {
     // Vérification que le message "An error occurred" s'affiche
     cy.get('span.error.ml2.ng-star-inserted').should('contain.text', 'An error occurred');
   });
-
-
+  
   it('should register, log in, verify user account details and delete it', () => {
     // Given
     // Interception de la requête d'inscription et simulation d'une réponse réussie
@@ -116,5 +115,8 @@ describe('Register spec', () => {
     // Then
     // Vérification que la requête DELETE a été appelée
     cy.wait('@deleteUser').its('response.statusCode').should('eq', 200);
+
+    // Vérification que l'utilisateur est redirigé vers la page de connexion après la suppression
+    cy.url().should('eq', 'http://localhost:4200/');
   });
 })
