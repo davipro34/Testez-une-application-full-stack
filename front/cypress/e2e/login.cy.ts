@@ -9,6 +9,7 @@ describe('Login spec', () => {
     lastName: 'Admin',
     email: 'yoga@studio.com',
     password: 'test!1234',
+    admin: true,
   };
 
   // Avant chaque test, visite de la page de connexion
@@ -40,6 +41,22 @@ describe('Login spec', () => {
 
     // Vérification qu'aucun message d'erreur n'est affiché
     cy.get('.error').should('not.exist')
+
+    // Interception de la requête de l'utilisateur et simulation d'une réponse réussie
+    cy.intercept('GET', `/api/user/${user.id}`, {
+      statusCode: 200,
+      body: user,
+    }).as('getUser')
+
+    // Clic sur le lien vers la page de l'utilisateur
+    cy.get('span[routerLink=me]').click();
+
+    // Then
+    // Vérification que l'URL a changé pour la page de l'utilisateur
+    cy.url().should('include', '/me');
+    
+    // Verifier que le bouton affiche "You are admin" et ne soit pas cliquable
+    cy.get('p.my2').should('contain', 'You are admin');
   })
 
   it('should logout successfully', () => {
